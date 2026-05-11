@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HQ Mobile Presence</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4338ca;
+            --accent: #6366f1;
+            --success: #10b981;
+            --bg: #f1f5f9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            background: var(--bg);
+            color: #1e293b;
+            padding-bottom: 40px;
+        }
+
+        /* Top Bar Modern */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 30px 20px 50px 20px;
+            color: white;
+            border-bottom-left-radius: 35px;
+            border-bottom-right-radius: 35px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(67, 56, 202, 0.2);
+        }
+        .top-bar h1 { font-size: 22px; font-weight: 800; }
+        .top-bar p { font-size: 12px; opacity: 0.8; margin-top: 4px; letter-spacing: 1px; }
+
+        .container { 
+            width: 92%; 
+            margin: -30px auto 0 auto; 
+        }
+
+        /* Floating Input Card */
+        .main-card {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .label { font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 8px; display: block; text-transform: uppercase; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1.5px solid #f1f5f9;
+            border-radius: 15px;
+            font-size: 15px;
+            background: #f8fafc;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); outline: none; background: white; }
+
+        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .date-grid { display: grid; grid-template-columns: 1.2fr 0.8fr 1.3fr 0.8fr; gap: 8px; }
+
+        .btn-add {
+            width: 100%;
+            background: linear-gradient(135deg, #4338ca, #6366f1);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 8px 15px rgba(67, 56, 202, 0.2);
+        }
+
+        /* List Styling (Mobile Mode) */
+        .list-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin: 20px 5px 15px 5px; 
+        }
+        .list-header h2 { font-size: 16px; font-weight: 800; }
+
+        .absen-card {
+            background: white;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f1f5f9;
+        }
+        .absen-info { flex: 1; }
+        .absen-name { font-weight: 700; font-size: 15px; color: #1e293b; margin-bottom: 3px; display: block; }
+        .absen-meta { font-size: 11px; color: #64748b; font-weight: 600; }
+        
+        .status-pill {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .pill-hadir { background: #dcfce7; color: #10b981; }
+        .pill-izin { background: #fef3c7; color: #f59e0b; }
+        .pill-sakit { background: #dbeafe; color: #3b82f6; }
+        .pill-alfa { background: #fee2e2; color: #ef4444; }
+
+        .btn-delete {
+            background: #fff1f2;
+            color: #f43f5e;
+            width: 35px; height: 35px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-left: 10px; border: none; font-size: 18px;
+        }
+
+        /* Bottom Actions */
+        .bottom-nav {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-nav {
+            padding: 15px; border-radius: 15px; border: none; font-weight: 700; font-size: 13px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .bg-pdf { background: #10b981; color: white; }
+        .bg-reset { background: white; color: #f43f5e; border: 1.5px solid #fecdd3; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h1>SMP Hamalatul Quran</h1>
+        <p>PRESENSI DIGITAL</p>
+    </div>
+
+    <div class="container">
+        <div class="main-card">
+            <label class="label">Nama Siswa</label>
+            <input type="text" id="nama" placeholder="Tulis nama lengkap...">
+
+            <div class="date-grid">
+                <div>
+                    <label class="label">Hari</label>
+                    <select id="hari">
+                        <option>Senin</option><option>Selasa</option><option>Rabu</option>
+                        <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Ahad</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Tgl</label>
+                    <select id="tgl_hari"></select>
+                </div>
+                <div>
+                    <label class="label">Bulan</label>
+                    <select id="bln_hari">
+                        <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
+                        <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
+                        <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Thn</label>
+                    <input type="number" id="thn_hari" value="2026">
+                </div>
+            </div>
+
+            <div class="row-grid">
+                <div>
+                    <label class="label">Status</label>
+                    <select id="status">
+                        <option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alfa</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Keterangan</label>
+                    <input type="text" id="keterangan" placeholder="Catatan...">
+                </div>
+            </div>
+
+            <button class="btn-add" onclick="tambahData()">Simpan Presensi</button>
+        </div>
+
+        <div class="list-header">
+            <h2>Riwayat Absensi</h2>
+        </div>
+
+        <div id="list-container">
+            <!-- Data akan muncul di sini -->
+        </div>
+
+        <div class="bottom-nav">
+            <button class="btn-nav bg-pdf" onclick="eksporPDF()">📄 Download PDF</button>
+            <button class="btn-nav bg-reset" onclick="resetData()">🗑️ Hapus Semua</button>
+        </div>
+    </div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem("db_hq_mobile")) || [];
+
+    // Setup Dropdown Tanggal
+    const tglSelect = document.getElementById('tgl_hari');
+    for(let i=1; i<=31; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.innerHTML = i;
+        tglSelect.appendChild(opt);
+    }
+
+    function tambahData() {
+        const nama = document.getElementById("nama").value.trim();
+        const hari = document.getElementById("hari").value;
+        const tgl = document.getElementById("tgl_hari").value;
+        const bln = document.getElementById("bln_hari").value;
+        const thn = document.getElementById("thn_hari").value;
+        const status = document.getElementById("status").value;
+        const ket = document.getElementById("keterangan").value.trim() || "-";
+
+        if (!nama) return alert("Isi nama dulu ya!");
+
+        const tanggalLengkap = `${tgl} ${bln} ${thn}`;
+        db.push({ id: Date.now(), nama, hari, tgl: tanggalLengkap, status, ket });
+        localStorage.setItem("db_hq_mobile", JSON.stringify(db));
+        
+        document.getElementById("nama").value = "";
+        document.getElementById("keterangan").value = "";
+        render();
+    }
+
+    function render() {
+        const container = document.getElementById("list-container");
+        container.innerHTML = "";
+        const sorted = [...db].sort((a,b) => b.id - a.id);
+
+        if(sorted.length === 0) {
+            container.innerHTML = `<p style="text-align:center; font-size:13px; color:#94a3b8; margin:20px 0;">Belum ada data tersimpan</p>`;
+            return;
+        }
+
+        sorted.forEach(item => {
+            const statusClass = `pill-${item.status.toLowerCase()}`;
+            const card = document.createElement("div");
+            card.className = "absen-card";
+            card.innerHTML = `
+                <div class="absen-info">
+                    <span class="absen-name">${item.nama}</span>
+                    <span class="absen-meta">${item.hari}, ${item.tgl} • ${item.ket}</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <span class="status-pill ${statusClass}">${item.status}</span>
+                    <button class="btn-delete" onclick="hapus(${item.id})">&times;</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function hapus(id) {
+        if(confirm("Hapus data ini?")) {
+            db = db.filter(x => x.id !== id);
+            localStorage.setItem("db_hq_mobile", JSON.stringify(db));
+            render();
+        }
+    }
+
+    function resetData() {
+        if(confirm("Bersihkan semua riwayat?")) {
+            db = [];
+            localStorage.removeItem("db_hq_mobile");
+            render();
+        }
+    }
+
+    function eksporPDF() {
+        if(db.length === 0) return alert("Data masih kosong");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("Laporan Presensi SMP Hamalatul Quran", 14, 15);
+        const rows = db.map((x, i) => [i+1, x.nama, x.hari, x.tgl, x.status, x.ket]);
+        doc.autoTable({ 
+            head: [['No', 'Nama', 'Hari', 'Tanggal', 'Status', 'Keterangan']], 
+            body: rows, 
+            startY: 22,
+            headStyles: { fillColor: [67, 56, 202] }
+        });
+        doc.save("Presensi_HQ_Mobile.pdf");
+    }
+
+    render();
+</script>
+
+</body>
+</html>
